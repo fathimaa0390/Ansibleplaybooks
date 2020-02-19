@@ -1,0 +1,16 @@
+---
+#- hosts: puppetvm02
+ # become: yes
+  #become_method: sudo
+  #gather_facts: no
+ #tasks:
+
+  - name: Add group locally
+    group: name=tomcat state=present
+    tags:
+      - creategroup
+
+  - name: Add user locally
+    user: name=tomcat state=present group=tomcat
+    tags:
+      - createuser

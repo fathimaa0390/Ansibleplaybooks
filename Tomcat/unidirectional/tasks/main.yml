@@ -1,0 +1,46 @@
+---
+# This playbook is to run performance testing between master and the local server details needs to be checked for it work
+# as desired, the local server details needs to be updated on variable LOCAL_SERVER in the vars file
+#
+- name: Create the data directory for the namenode metadata
+  file: path={{OUTPUT_DIR}} owner=amd group=amd state=directory
+
+- name: create iptables log file and kill any iperf running on the remote node
+  command: "{{ item }}"
+  args:
+    chdir: {{OUTPUT_DIR}}
+  with_items:
+    - "iptables -F >> ${PREFIX}_setup.log 2>&1"
+    - "killall --signal KILL iperf > /dev/null 2>&1"
+
+- name: create iptables log file and kill any iperf running on the master node
+  local_action: shell "killall --signal KILL iperf > /dev/null 2>&1"
+
+
+- name: create iptables log file and kill any iperf running on the remote node 
+  command: "{{ item }}"
+  args:
+    chdir: {{OUTPUT_DIR}}
+  with_items:
+    - "numactl --physcpubind ${L_SERVER_1a} --interleave= iperf -s -B ${LOCAL_SERVER} -p 5204 --window=${WINSZ}  --len ${LENGTH} > local_serv_s0p0a.log 2>&1 &"
+    - "numactl --physcpubind ${L_SERVER_1b} --interleave= iperf -s -B ${LOCAL_SERVER} -p 5205 --window=${WINSZ}  --len ${LENGTH} > local_serv_s0p0b.log 2>&1 &"
+    - "numactl --physcpubind ${L_SERVER_1c} --interleave= iperf -s -B ${LOCAL_SERVER} -p 5206 --window=${WINSZ}  --len ${LENGTH} > local_serv_s0p0c.log 2>&1 &"
+
+- name: run iPerf and create the log file
+  command: "{{ item }}"
+  args:
+    chdir: {{OUTPUT_DIR}}
+  with_items:
+    - ""iperf -c ${LOCAL_SERVER} -t ${RUNTIME} -p 5204 -P ${NUM_THRDS} --enhancedreports --window=${WINSZ} --len ${LENGTH}" > rem_clnt_s0p0a.txt 2>&1 &"
+    - ""iperf -c ${LOCAL_SERVER} -t ${RUNTIME} -p 5205 -P ${NUM_THRDS} --enhancedreports --window=${WINSZ} --len ${LENGTH}" > rem_clnt_s0p0b.txt 2>&1 &"
+    - ""iperf -c ${LOCAL_SERVER} -t ${RUNTIME} -p 5206 -P ${NUM_THRDS} --enhancedreports --window=${WINSZ} --len ${LENGTH}" > rem_clnt_s0p0c.txt 2>&1 &"
+
+- name: kill any iperf running on the remote nodes
+  command: "{{ item }}"
+  args:
+    chdir: {{OUTPUT_DIR}}
+  with_items:
+    - "killall --signal KILL iperf"
+
+- name: kill any iperf running on the master node
+  local_action: shell "killall --signal KILL iperf"

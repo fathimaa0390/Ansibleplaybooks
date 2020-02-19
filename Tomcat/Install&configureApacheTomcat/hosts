@@ -1,0 +1,6 @@
+[puppetvm01]
+escmtd01 ansible_ssh_host=10.62.99.89
+
+[puppetvm02]
+escmtd02 ansible_ssh_host=10.62.99.90
+

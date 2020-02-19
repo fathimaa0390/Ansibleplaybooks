@@ -1,0 +1,22 @@
+---
+
+- name: ensure tomcat is running (and enable it at boot)
+  service: name=httpd state=started enabled=yes
+
+- name: Change ownership of Tomcat installation
+  file: path={{bin_path}}/tomcat/ owner=tomcat group=tomcat state=directory recurse=yes
+
+- name: Configure Tomcat users
+  template: src=tomcat-users.xml dest={{bin_path}}/apache-tomcat-7.0.81/conf/ remote_src=False
+
+- name: Install Tomcat init script
+  template: src=tomcat-initscript.sh dest=/etc/init.d/tomcat mode=0755
+
+- name: Start Tomcat
+  command: service tomcat start
+  #service: name=tomcat state=restarted enabled=yes
+
+#- name: deploy iptables rules
+ # template: src=iptables-save dest=/etc/sysconfig/iptables
+  #when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '6'"
+ # notify: restart iptables

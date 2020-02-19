@@ -1,0 +1,24 @@
+---
+
+##########This playbook is for the installation of tomcat##############
+
+- name: Create the data directory for the namenode metadata
+  file: path={{bin_path}} owner=tomcat group=tomcat state=directory 
+
+#- name: copy the source file
+ # copy: src=apache-tomcat-7.0.81.tar dest={{bin_path}}/apache-tomcat-7.0.81.tar
+
+- name: Extract archive
+  unarchive: src=apache-tomcat-7.0.81.tar dest={{bin_path}}/ remote_src=false
+
+- name: change ownership to tomcat user
+  command: chown tomcat:tomcat -R {{bin_path}}
+
+- name: deploy iptables rules
+  template:
+    src: iptables-save
+    dest: /etc/sysconfig/iptables
+  when: ansible_distribution_major_version != "7"
+  notify: restart iptables
+
+

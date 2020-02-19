@@ -1,0 +1,13 @@
+---
+- hosts: puppetvm02
+  vars:
+    max_clients: 200
+    remote_user: root
+
+  roles :
+    - Adduser
+    - install_Tomcat
+    - configure_Tomcat
+    - deployApplication
+
+      ######## Test Edit ########
